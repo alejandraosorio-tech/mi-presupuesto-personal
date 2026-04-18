@@ -115,6 +115,7 @@ st.subheader("💾 Finalizar y Guardar Historial")
 st.write("Presiona este botón cuando termines tu quincena.")
 
 if st.button("Guardar en mi Historial de Google Sheets"):
+    # Preparamos la fila con nombres de columnas exactos
     nueva_fila = pd.DataFrame([{
         "Fecha_Registro": date.today().strftime("%d/%m/%Y"),
         "Ingresos_Totales": float(ingreso_total),
@@ -126,10 +127,25 @@ if st.button("Guardar en mi Historial de Google Sheets"):
     }])
     
     try:
-        datos_existentes = conn.read(worksheet="Historico")
-        tabla_actualizada = pd.concat([datos_existentes, nueva_fila], ignore_index=True)
+        # Intentamos leer la hoja
+        try:
+            datos_existentes = conn.read(worksheet="Historico", ttl=0) # ttl=0 para que no use datos viejos
+        except:
+            datos_existentes = pd.DataFrame() # Si falla al leer, empezamos de cero
+
+        # Si la hoja tiene datos, los juntamos. Si no, usamos solo la nueva fila.
+        if not datos_existentes.empty:
+            # Quitamos filas vacías que puedan estorbar
+            datos_existentes = datos_existentes.dropna(how='all')
+            tabla_actualizada = pd.concat([datos_existentes, nueva_fila], ignore_index=True)
+        else:
+            tabla_actualizada = nueva_fila
+
+        # EL TRUCO: Actualizamos la hoja completa
         conn.update(worksheet="Historico", data=tabla_actualizada)
-        st.success("✅ ¡Datos guardados con éxito en tu Google Sheets!")
+        
+        st.success("✅ ¡Datos guardados con éxito!")
         st.balloons()
     except Exception as e:
-        st.error(f"Hubo un error al guardar: {e}")
+        st.error(f"Error técnico: {e}")
+        st.info("💡 Consejo: Asegúrate de que el enlace en 'Secrets' termine en /edit y no tenga nada más después.")
