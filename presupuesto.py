@@ -10,6 +10,23 @@ st.set_page_config(page_title="Mi Presupuesto Quincenal", layout="wide")
 
 # --- CONEXIÓN A GOOGLE SHEETS ---
 conn = st.connection("gsheets", type=GSheetsConnection)
+# --- COPIAR DESDE AQUÍ ---
+try:
+    df_estado = conn.read(spreadsheet=url_hoja, worksheet="Estado_Actual", ttl=0)
+    if not df_estado.empty:
+        memoria = df_estado.iloc[-1].to_dict()
+    else:
+        memoria = {}
+except Exception:
+    memoria = {}
+
+def cargar(nombre_columna):
+    valor = memoria.get(nombre_columna, 0.0)
+    try:
+        return float(valor)
+    except:
+        return 0.0
+# --- HASTA AQUÍ ---
 
 # Estilo para los números
 st.markdown("""
@@ -143,6 +160,9 @@ if st.button("Guardar en mi Historial de Google Sheets"):
 
         # EL TRUCO: Actualizamos la hoja completa
         conn.update(worksheet="Historico", data=tabla_actualizada)
+        # --- COPIAR ESTO DENTRO DEL IF DEL BOTÓN ---
+conn.update(spreadsheet=url_hoja, worksheet="Estado_Actual", data=nueva_fila)
+st.rerun()
         
         st.success("✅ ¡Datos guardados con éxito!")
         st.balloons()
