@@ -60,7 +60,21 @@ config_fijos = {
     "Fecha": st.column_config.DateColumn("Fecha", format="DD/MM/YYYY"),
     "Monto": st.column_config.NumberColumn("Monto ($)", format="$ %d")
 }
+# --- LIMPIEZA DE DATOS (Filtro anti-errores de Google Sheets) ---
+        # 1. Obligamos a que la columna 'Monto' sea numérica
+        if "Monto" in df_fijos_init.columns:
+            df_fijos_init["Monto"] = pd.to_numeric(df_fijos_init["Monto"], errors="coerce").fillna(0)
+            
+        # 2. Si tienes una columna de casillas (ej. 'Pagado', 'Listo', etc.), pon su nombre exacto aquí:
+        # Esto convierte los "TRUE" de Excel a casillas marcadas de Python
+        nombre_columna_checkbox = "Pagado" # <-- Cambia "Pagado" por el nombre de tu columna si se llama distinto
+        if nombre_columna_checkbox in df_fijos_init.columns:
+            df_fijos_init[nombre_columna_checkbox] = df_fijos_init[nombre_columna_checkbox].astype(str).str.upper() == "TRUE"
 
+        # ----------------------------------------------------------------
+        
+        # AQUÍ VA TU LÍNEA 64 ORIGINAL:
+        edit_fijos = st.data_editor(df_fijos_init, num_rows="dynamic", use_container_width=True, column_config=config_fijos, key="fijos_table")
 edit_fijos = st.data_editor(df_fijos_init, num_rows="dynamic", use_container_width=True, column_config=config_fijos, key="fijos_table")
 
 total_fijos_proyectado = edit_fijos["Monto"].sum()
