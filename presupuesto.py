@@ -70,7 +70,10 @@ if "Monto" in df_fijos_init.columns:
 nombre_columna_checkbox = "Pagado" 
 if nombre_columna_checkbox in df_fijos_init.columns:
     df_fijos_init[nombre_columna_checkbox] = df_fijos_init[nombre_columna_checkbox].astype(str).str.upper() == "TRUE"
-
+    
+# 3. ¡NUEVO! Convertir las Fechas de texto a un formato de calendario real
+if "Fecha" in df_fijos_init.columns:
+    df_fijos_init["Fecha"] = pd.to_datetime(df_fijos_init["Fecha"], errors="coerce").dt.date
 # ----------------------------------------------------------------
 
 # AQUÍ VA TU LÍNEA ORIGINAL:
