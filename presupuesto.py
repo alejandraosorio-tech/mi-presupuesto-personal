@@ -99,15 +99,15 @@ def crear_seccion_rubro(col, titulo, porcentaje, df_inicial, key_name):
         gastado = edit_df[edit_df.iloc[:, -1] == True]["Monto"].sum()
         saldo = asignado - gastado
         st.metric(f"Saldo {titulo}", f"$ {saldo:,.0f}")
-        return gastado
+        return gastado, edit_df
 
 df_ah_init = cargar_tabla("Ahorro_Actual", [{"Fecha": date.today(), "Concepto": "Ahorro", "Monto": 0, "Listo": False}])
 df_pr_init = cargar_tabla("Prog_Actual", [{"Fecha": date.today(), "Concepto": "Láser", "Monto": 0, "Pagado": False}])
 df_np_init = cargar_tabla("NoProg_Actual", [{"Fecha": date.today(), "Concepto": "Efectivo", "Monto": 0, "Hecho": False}])
 
-g1 = crear_seccion_rubro(col_r1, "Ahorro", p_ahorro, df_ah_init, "t_ahorro")
-g2 = crear_seccion_rubro(col_r2, "Programados", p_prog, df_pr_init, "t_prog")
-g3 = crear_seccion_rubro(col_r3, "No Prog.", p_noprog, df_np_init, "t_noprog")
+g1, edit_ahorro = crear_seccion_rubro(col_r1, "Ahorro", p_ahorro, df_ah_init, "t_ahorro")
+g2, edit_prog = crear_seccion_rubro(col_r2, "Programados", p_prog, df_pr_init, "t_prog")
+g3, edit_noprog = crear_seccion_rubro(col_r3, "No Prog.", p_noprog, df_np_init, "t_noprog")
 
 # --- 4. SALDO GLOBAL ---
 st.divider()
