@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 from datetime import date
+
 try:
     from streamlit_gsheets import GSheetsConnection
 except ImportError:
@@ -9,8 +10,10 @@ except ImportError:
 st.set_page_config(page_title="Mi Presupuesto Quincenal", layout="wide")
 
 # --- CONEXIÓN A GOOGLE SHEETS ---
+url_hoja = "https://docs.google.com/spreadsheets/d/1hwTThiotKRPqiDBEh5hvILvtEUkrdmnCIYoLnChFA7Y/edit"
 conn = st.connection("gsheets", type=GSheetsConnection)
-# --- COPIAR DESDE AQUÍ ---
+
+# --- LECTURA DE MEMORIA ---
 try:
     df_estado = conn.read(spreadsheet=url_hoja, worksheet="Estado_Actual", ttl=0)
     if not df_estado.empty:
@@ -26,7 +29,6 @@ def cargar(nombre_columna):
         return float(valor)
     except:
         return 0.0
-# --- HASTA AQUÍ ---
 
 # Estilo para los números
 st.markdown("""
@@ -146,26 +148,27 @@ if st.button("Guardar en mi Historial de Google Sheets"):
     try:
         # Intentamos leer la hoja
         try:
-            datos_existentes = conn.read(worksheet="Historico", ttl=0) # ttl=0 para que no use datos viejos
+            datos_existentes = conn.read(spreadsheet=url_hoja, worksheet="Historico", ttl=0)
         except:
-            datos_existentes = pd.DataFrame() # Si falla al leer, empezamos de cero
+            datos_existentes = pd.DataFrame() 
 
         # Si la hoja tiene datos, los juntamos. Si no, usamos solo la nueva fila.
         if not datos_existentes.empty:
-            # Quitamos filas vacías que puedan estorbar
             datos_existentes = datos_existentes.dropna(how='all')
             tabla_actualizada = pd.concat([datos_existentes, nueva_fila], ignore_index=True)
         else:
             tabla_actualizada = nueva_fila
 
-        # EL TRUCO: Actualizamos la hoja completa
-        conn.update(worksheet="Historico", data=tabla_actualizada)
-        # --- COPIAR ESTO DENTRO DEL IF DEL BOTÓN ---
-conn.update(spreadsheet=url_hoja, worksheet="Estado_Actual", data=nueva_fila)
-st.rerun()
+        # 1. Actualizamos la hoja completa del Historial
+        conn.update(spreadsheet=url_hoja, worksheet="Historico", data=tabla_actualizada)
+        
+        # 2. Guardamos el Estado Actual para la memoria
+        conn.update(spreadsheet=url_hoja, worksheet="Estado_Actual", data=nueva_fila)
         
         st.success("✅ ¡Datos guardados con éxito!")
         st.balloons()
+        st.rerun()
+        
     except Exception as e:
         st.error(f"Error técnico: {e}")
         st.info("💡 Consejo: Asegúrate de que el enlace en 'Secrets' termine en /edit y no tenga nada más después.")
