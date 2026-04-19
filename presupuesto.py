@@ -139,9 +139,9 @@ if st.button("Guardar en mi Historial de Google Sheets"):
     
     try:
         # 1. Guarda el histórico
-        datos_existentes = conn.read(spreadsheet = https://docs.google.com/spreadsheets/d/1hwTThiotKRPqiDBEh5hvILvtEUkrdmnCIYoLnChFA7Y/edit?usp=sharing, worksheet="Historico", ttl=0)
+        datos_existentes = conn.read(spreadsheet = url_hoja, worksheet="Historico", ttl=0)
         tabla_actualizada = pd.concat([datos_existentes, nueva_fila], ignore_index=True)
-        conn.update(spreadsheet = https://docs.google.com/spreadsheets/d/1hwTThiotKRPqiDBEh5hvILvtEUkrdmnCIYoLnChFA7Y/edit?usp=sharing, worksheet="Historico", data=tabla_actualizada)
+        conn.update(spreadsheet = url_hoja, worksheet="Historico", data=tabla_actualizada)
         
         # 2. Guarda las listas individuales en sus pestañas
         conn.update(spreadsheet= url_hoja, worksheet="Extras_Actual", data=edit_extras)
