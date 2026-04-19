@@ -20,7 +20,7 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 @st.cache_data(ttl=600)
 def cargar_tabla(nombre_hoja, columnas_defecto):
     try:
-        df = conn.read(spreadsheet= https://docs.google.com/spreadsheets/d/1hwTThiotKRPqiDBEh5hvILvtEUkrdmnCIYoLnChFA7Y/edit?usp=sharing , worksheet=nombre_hoja, ttl=0)
+        df = conn.read(spreadsheet= url_hoja , worksheet=nombre_hoja, ttl=0)
         if df.empty:
             return pd.DataFrame(columnas_defecto)
         return df
@@ -144,11 +144,11 @@ if st.button("Guardar en mi Historial de Google Sheets"):
         conn.update(spreadsheet = https://docs.google.com/spreadsheets/d/1hwTThiotKRPqiDBEh5hvILvtEUkrdmnCIYoLnChFA7Y/edit?usp=sharing, worksheet="Historico", data=tabla_actualizada)
         
         # 2. Guarda las listas individuales en sus pestañas
-        conn.update(spreadsheet= https://docs.google.com/spreadsheets/d/1hwTThiotKRPqiDBEh5hvILvtEUkrdmnCIYoLnChFA7Y/edit?usp=sharing, worksheet="Extras_Actual", data=edit_extras)
-        conn.update(spreadsheet= https://docs.google.com/spreadsheets/d/1hwTThiotKRPqiDBEh5hvILvtEUkrdmnCIYoLnChFA7Y/edit?usp=sharing, worksheet="Fijos_Actuales", data=edit_fijos)
-        conn.update(spreadsheet= https://docs.google.com/spreadsheets/d/1hwTThiotKRPqiDBEh5hvILvtEUkrdmnCIYoLnChFA7Y/edit?usp=sharing, worksheet="Ahorro_Actual", data=edit_ahorro)
-        conn.update(spreadsheet= https://docs.google.com/spreadsheets/d/1hwTThiotKRPqiDBEh5hvILvtEUkrdmnCIYoLnChFA7Y/edit?usp=sharing, worksheet="Prog_Actual", data=edit_prog)
-        conn.update(spreadsheet= https://docs.google.com/spreadsheets/d/1hwTThiotKRPqiDBEh5hvILvtEUkrdmnCIYoLnChFA7Y/edit?usp=sharing, worksheet="NoProg_Actual", data=edit_noprog)
+        conn.update(spreadsheet= url_hoja, worksheet="Extras_Actual", data=edit_extras)
+        conn.update(spreadsheet= url_hoja, worksheet="Fijos_Actuales", data=edit_fijos)
+        conn.update(spreadsheet= url_hoja, worksheet="Ahorro_Actual", data=edit_ahorro)
+        conn.update(spreadsheet= url_hoja, worksheet="Prog_Actual", data=edit_prog)
+        conn.update(spreadsheet= url_hoja, worksheet="NoProg_Actual", data=edit_noprog)
         
         # 3. ¡EL TRUCO DE MAGIA! Borramos el caché para que lea lo nuevo
         st.cache_data.clear()
