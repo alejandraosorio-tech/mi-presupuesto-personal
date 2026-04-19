@@ -9,7 +9,11 @@ except ImportError:
 st.set_page_config(page_title="Mi Presupuesto Quincenal", layout="wide")
 
 # --- CONEXIÓN A GOOGLE SHEETS ---
-conn = st.connection("gsheets", type=GSheetsConnection)
+# 1. Define tu link una sola vez aquí arriba
+url_hoja = "https://docs.google.com/spreadsheets/d/1hwTThiotKRPqiDBEh5hvILvtEUkrdmnCIYoLnChFA7Y/edit?usp=sharing" 
+
+# 2. Pásale el link a la conexión para que lo use siempre
+conn = st.connection("gsheets", type=GSheetsConnection, spreadsheet=url_hoja)
 
 # --- MOTOR DE MEMORIA (CACHÉ) ---
 # Esto guarda la "foto" por 10 minutos para que Google no nos bloquee
