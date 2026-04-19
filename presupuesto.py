@@ -41,7 +41,7 @@ st.header("1. Mis Ingresos")
 col_ing1, col_ing2 = st.columns([1, 2])
 with col_ing1:
     # Aquí usamos 'cargar' para que recuerde el sueldo base
-    ingreso_base = st.number_input("Sueldo Base ($):", value=cargar("Ingresos_Totales", 1313500), step=1000)
+    ingreso_base = st.number_input("Sueldo Base ($):", value=cargar("Ingresos_Totales", 1313500.0), step=1000.0)
 
 with col_ing2:
     st.write("Historial de Ingresos Extras:")
