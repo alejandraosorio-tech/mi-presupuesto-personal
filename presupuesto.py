@@ -13,14 +13,14 @@ st.set_page_config(page_title="Mi Presupuesto Quincenal", layout="wide")
 url_hoja = "https://docs.google.com/spreadsheets/d/1hwTThiotKRPqiDBEh5hvILvtEUkrdmnCIYoLnChFA7Y/edit?usp=sharing" 
 
 # 2. Pásale el link a la conexión para que lo use siempre
-conn = st.connection("gsheets", type=GSheetsConnection, spreadsheet=url_hoja)
+conn = st.connection("gsheets", type=GSheetsConnection)
 
 # --- MOTOR DE MEMORIA (CACHÉ) ---
 # Esto guarda la "foto" por 10 minutos para que Google no nos bloquee
 @st.cache_data(ttl=600)
 def cargar_tabla(nombre_hoja, columnas_defecto):
     try:
-        df = conn.read(worksheet=nombre_hoja, ttl=0)
+        df = conn.read(spreadsheet= https://docs.google.com/spreadsheets/d/1hwTThiotKRPqiDBEh5hvILvtEUkrdmnCIYoLnChFA7Y/edit?usp=sharing , worksheet=nombre_hoja, ttl=0)
         if df.empty:
             return pd.DataFrame(columnas_defecto)
         return df
@@ -123,7 +123,6 @@ st.metric("Dinero que debería haber hoy:", f"$ {saldo_final_cuenta:,.0f}")
 st.divider()
 
 # --- 5. GUARDAR HISTORIAL ---
-# --- 5. GUARDAR HISTORIAL ---
 st.subheader("💾 Finalizar y Guardar Historial")
 st.write("Presiona este botón cuando termines tu quincena.")
 
@@ -140,13 +139,16 @@ if st.button("Guardar en mi Historial de Google Sheets"):
     
     try:
         # 1. Guarda el histórico
-        datos_existentes = conn.read(worksheet="Historico", ttl=0)
+        datos_existentes = conn.read(spreadsheet = https://docs.google.com/spreadsheets/d/1hwTThiotKRPqiDBEh5hvILvtEUkrdmnCIYoLnChFA7Y/edit?usp=sharing, worksheet="Historico", ttl=0)
         tabla_actualizada = pd.concat([datos_existentes, nueva_fila], ignore_index=True)
-        conn.update(worksheet="Historico", data=tabla_actualizada)
+        conn.update(spreadsheet = https://docs.google.com/spreadsheets/d/1hwTThiotKRPqiDBEh5hvILvtEUkrdmnCIYoLnChFA7Y/edit?usp=sharing, worksheet="Historico", data=tabla_actualizada)
         
         # 2. Guarda las listas individuales en sus pestañas
-        conn.update(worksheet="Extras_Actual", data=edit_extras)
-        conn.update(worksheet="Fijos_Actuales", data=edit_fijos)
+        conn.update(spreadsheet= https://docs.google.com/spreadsheets/d/1hwTThiotKRPqiDBEh5hvILvtEUkrdmnCIYoLnChFA7Y/edit?usp=sharing, worksheet="Extras_Actual", data=edit_extras)
+        conn.update(spreadsheet= https://docs.google.com/spreadsheets/d/1hwTThiotKRPqiDBEh5hvILvtEUkrdmnCIYoLnChFA7Y/edit?usp=sharing, worksheet="Fijos_Actuales", data=edit_fijos)
+        conn.update(spreadsheet= https://docs.google.com/spreadsheets/d/1hwTThiotKRPqiDBEh5hvILvtEUkrdmnCIYoLnChFA7Y/edit?usp=sharing, worksheet="Ahorro_Actual", data=edit_ahorro)
+        conn.update(spreadsheet= https://docs.google.com/spreadsheets/d/1hwTThiotKRPqiDBEh5hvILvtEUkrdmnCIYoLnChFA7Y/edit?usp=sharing, worksheet="Prog_Actual", data=edit_prog)
+        conn.update(spreadsheet= https://docs.google.com/spreadsheets/d/1hwTThiotKRPqiDBEh5hvILvtEUkrdmnCIYoLnChFA7Y/edit?usp=sharing, worksheet="NoProg_Actual", data=edit_noprog)
         
         # 3. ¡EL TRUCO DE MAGIA! Borramos el caché para que lea lo nuevo
         st.cache_data.clear()
