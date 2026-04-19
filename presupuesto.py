@@ -119,6 +119,7 @@ st.metric("Dinero que debería haber hoy:", f"$ {saldo_final_cuenta:,.0f}")
 st.divider()
 
 # --- 5. GUARDAR HISTORIAL ---
+# --- 5. GUARDAR HISTORIAL ---
 st.subheader("💾 Finalizar y Guardar Historial")
 st.write("Presiona este botón cuando termines tu quincena.")
 
@@ -127,15 +128,14 @@ if st.button("Guardar en mi Historial de Google Sheets"):
         "Fecha_Registro": date.today().strftime("%d/%m/%Y"),
         "Ingresos_Totales": float(ingreso_total),
         "Gastos_Fijos": float(gastado_fijos_real),
-        "Ahorro_Realizado": float(g1),
+        "Ahorro_Realizado": float(g1), # Temporal, lo ajustaremos
         "Programados_Realizado": float(g2),
         "No_Programados_Realizado": float(g3),
         "Saldo_Final": float(saldo_final_cuenta)
     }])
     
     try:
-        try:
-        # 1. Guarda el histórico (Tu código original, intacto)
+        # 1. Guarda el histórico
         datos_existentes = conn.read(worksheet="Historico", ttl=0)
         tabla_actualizada = pd.concat([datos_existentes, nueva_fila], ignore_index=True)
         conn.update(worksheet="Historico", data=tabla_actualizada)
@@ -143,11 +143,12 @@ if st.button("Guardar en mi Historial de Google Sheets"):
         # 2. Guarda las listas individuales en sus pestañas
         conn.update(worksheet="Extras_Actual", data=edit_extras)
         conn.update(worksheet="Fijos_Actuales", data=edit_fijos)
-        # Ojo aquí: Cuando usamos funciones, st.data_editor devuelve el nombre de la variable que usaste (g1, g2, g3 no son las tablas, son los montos)
-        # Para que esto funcione perfecto, editaremos tu función 'crear_seccion_rubro' en el siguiente paso.
         
         # 3. ¡EL TRUCO DE MAGIA! Borramos el caché para que lea lo nuevo
         st.cache_data.clear()
         
         st.success("✅ ¡Datos y listas guardadas con éxito en tu Google Sheets!")
         st.balloons()
+        
+    except Exception as e:
+        st.error(f"Hubo un error al guardar: {e}")
