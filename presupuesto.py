@@ -11,6 +11,17 @@ st.set_page_config(page_title="Mi Presupuesto Quincenal", layout="wide")
 # --- CONEXIÓN A GOOGLE SHEETS ---
 conn = st.connection("gsheets", type=GSheetsConnection)
 
+# --- MOTOR DE MEMORIA (CACHÉ) ---
+# Esto guarda la "foto" por 10 minutos para que Google no nos bloquee
+@st.cache_data(ttl=600)
+def cargar_tabla(nombre_hoja, columnas_defecto):
+    try:
+        df = conn.read(worksheet=nombre_hoja, ttl=0)
+        if df.empty:
+            return pd.DataFrame(columnas_defecto)
+        return df
+    except Exception:
+        return pd.DataFrame(columnas_defecto)
 # Estilo para los números
 st.markdown("""
     <style>
@@ -27,7 +38,7 @@ with col_ing1:
     ingreso_base = st.number_input("Sueldo Base ($):", value=1313500, step=1000)
 with col_ing2:
     st.write("Historial de Ingresos Extras:")
-    df_extras_init = pd.DataFrame([{"Concepto": "Venta ropa", "Monto": 0}])
+    df_extras_init = cargar_tabla("Extras_Actual", [{"Concepto": "Venta ropa", "Monto": 0}])
     edit_extras = st.data_editor(df_extras_init, num_rows="dynamic", use_container_width=True, key="extras")
     total_extras = edit_extras["Monto"].sum()
 
@@ -39,10 +50,7 @@ st.divider()
 # --- 2. EGRESOS FIJOS ---
 st.header("2. Egresos Fijos")
 
-df_fijos_init = pd.DataFrame([
-    {"Fecha": date(2024, 4, 17), "Concepto": "Gasolina", "Monto": 11000, "Pagado": True},
-    {"Fecha": date(2024, 4, 19), "Concepto": "Gasolina", "Monto": 25000, "Pagado": False},
-])
+df_fijos_init = cargar_tabla("Fijos_Actuales", [{"Fecha": date.today(), "Concepto": "Ejemplo", "Monto": 0, "Pagado": False}])
 
 config_fijos = {
     "Fecha": st.column_config.DateColumn("Fecha", format="DD/MM/YYYY"),
@@ -93,9 +101,9 @@ def crear_seccion_rubro(col, titulo, porcentaje, df_inicial, key_name):
         st.metric(f"Saldo {titulo}", f"$ {saldo:,.0f}")
         return gastado
 
-df_ah_init = pd.DataFrame([{"Fecha": date(2024, 4, 15), "Concepto": "Ahorro", "Monto": 78200, "Listo": True}])
-df_pr_init = pd.DataFrame([{"Fecha": date(2024, 4, 24), "Concepto": "Láser", "Monto": 125000, "Pagado": False}])
-df_np_init = pd.DataFrame([{"Fecha": date(2024, 4, 18), "Concepto": "Efectivo", "Monto": 50000, "Hecho": True}])
+df_ah_init = cargar_tabla("Ahorro_Actual", [{"Fecha": date.today(), "Concepto": "Ahorro", "Monto": 0, "Listo": False}])
+df_pr_init = cargar_tabla("Prog_Actual", [{"Fecha": date.today(), "Concepto": "Láser", "Monto": 0, "Pagado": False}])
+df_np_init = cargar_tabla("NoProg_Actual", [{"Fecha": date.today(), "Concepto": "Efectivo", "Monto": 0, "Hecho": False}])
 
 g1 = crear_seccion_rubro(col_r1, "Ahorro", p_ahorro, df_ah_init, "t_ahorro")
 g2 = crear_seccion_rubro(col_r2, "Programados", p_prog, df_pr_init, "t_prog")
@@ -126,10 +134,20 @@ if st.button("Guardar en mi Historial de Google Sheets"):
     }])
     
     try:
-        datos_existentes = conn.read(worksheet="Historico")
+        try:
+        # 1. Guarda el histórico (Tu código original, intacto)
+        datos_existentes = conn.read(worksheet="Historico", ttl=0)
         tabla_actualizada = pd.concat([datos_existentes, nueva_fila], ignore_index=True)
         conn.update(worksheet="Historico", data=tabla_actualizada)
-        st.success("✅ ¡Datos guardados con éxito en tu Google Sheets!")
+        
+        # 2. Guarda las listas individuales en sus pestañas
+        conn.update(worksheet="Extras_Actual", data=edit_extras)
+        conn.update(worksheet="Fijos_Actuales", data=edit_fijos)
+        # Ojo aquí: Cuando usamos funciones, st.data_editor devuelve el nombre de la variable que usaste (g1, g2, g3 no son las tablas, son los montos)
+        # Para que esto funcione perfecto, editaremos tu función 'crear_seccion_rubro' en el siguiente paso.
+        
+        # 3. ¡EL TRUCO DE MAGIA! Borramos el caché para que lea lo nuevo
+        st.cache_data.clear()
+        
+        st.success("✅ ¡Datos y listas guardadas con éxito en tu Google Sheets!")
         st.balloons()
-    except Exception as e:
-        st.error(f"Hubo un error al guardar: {e}")
